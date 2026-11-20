@@ -340,3 +340,5 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) save(
 // ---------- boot ----------
 load().then(() => { if (current()) start(false, state.time) })
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js')
+// iOS ignores user-scalable=no: block pinch zoom ourselves (double-tap zoom is off via touch-action in CSS).
+document.addEventListener('gesturestart', (e) => e.preventDefault())

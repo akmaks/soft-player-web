@@ -1,6 +1,6 @@
 // Offline support for the home-screen app. Network first (updates arrive as soon as you are online),
 // cache as fallback. Audio itself lives in IndexedDB, not here.
-const CACHE = 'player-v1'
+const CACHE = 'player-v2'
 const SHELL = ['./', 'index.html', 'app.js', 'manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png']
 
 self.addEventListener('install', (e) => e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting())))

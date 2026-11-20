@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Плеер">
+<meta name="theme-color" content="#111111">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Плеер</title>
+<style>
+  :root {
+    --bg: #111; --fg: #f2f2f2; --dim: #8a8a8e; --line: #2a2a2c; --card: #1c1c1e; --accent: #ff9f0a;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg);
+    font: 17px/1.3 -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+  body { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+  button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+
+  header { padding: calc(env(safe-area-inset-top) + 8px) 16px 8px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 8px; }
+  #crumbs { flex: 1; min-width: 0; display: flex; gap: 4px; overflow-x: auto; white-space: nowrap;
+    font-weight: 600; scrollbar-width: none; }
+  #crumbs::-webkit-scrollbar { display: none; }
+  #crumbs button { color: var(--accent); }
+  #crumbs span { color: var(--dim); }
+  #crumbs button:last-child { color: var(--fg); }
+  .hbtn { width: 40px; height: 40px; border-radius: 20px; background: var(--card); font-size: 22px; flex: none; }
+  #add { background: var(--accent); color: #000; font-size: 28px; font-weight: 600; line-height: 1; }
+
+  main { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { display: flex; align-items: center; border-bottom: 1px solid var(--line); }
+  li .name { flex: 1; min-width: 0; text-align: left; padding: 14px 0 14px 16px; display: flex; gap: 12px; align-items: center; }
+  li .name b { font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  li .ico { width: 24px; text-align: center; flex: none; color: var(--dim); }
+  li.dir .ico { color: var(--accent); }
+  li.playing b { color: var(--accent); font-weight: 600; }
+  li .more { width: 48px; align-self: stretch; color: var(--dim); font-size: 20px; }
+  .empty { padding: 48px 24px; text-align: center; color: var(--dim); }
+  .playall { display: block; width: 100%; padding: 12px 16px; text-align: left; color: var(--accent);
+    border-bottom: 1px solid var(--line); }
+
+  footer { border-top: 1px solid var(--line); background: var(--card);
+    padding: 10px 16px calc(env(safe-area-inset-bottom) + 10px); }
+  footer.off { display: none; }
+  #title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+  #sub { color: var(--dim); font-size: 13px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .seek { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--dim); font-variant-numeric: tabular-nums; margin: 6px 0 2px; }
+  .seek span { width: 40px; } .seek span:last-child { text-align: right; }
+  input[type=range] { flex: 1; accent-color: var(--accent); height: 28px; margin: 0; }
+  .ctrls { display: flex; align-items: center; justify-content: space-between; }
+  .ctrls button { width: 52px; height: 52px; font-size: 26px; border-radius: 26px; }
+  #play { width: 64px; height: 64px; font-size: 32px; background: var(--fg); color: #000; }
+  .toggle { color: var(--dim); font-size: 20px !important; position: relative; }
+  .toggle.on { color: var(--accent); }
+  #repeat.one::after { content: '1'; position: absolute; font-size: 10px; font-weight: 700; right: 12px; top: 12px; }
+
+  dialog { border: 0; border-radius: 14px; background: var(--card); color: var(--fg); padding: 8px;
+    width: min(340px, calc(100vw - 32px)); }
+  dialog::backdrop { background: rgba(0,0,0,.6); }
+  dialog h3 { margin: 8px 12px 12px; font-size: 15px; color: var(--dim); font-weight: 500;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  dialog button { display: block; width: 100%; padding: 14px 12px; text-align: left; border-radius: 10px; }
+  dialog button:active { background: var(--line); }
+  dialog .danger { color: #ff453a; }
+  dialog .cancel { color: var(--dim); }
+  #toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 170px); transform: translateX(-50%);
+    background: #333; padding: 10px 16px; border-radius: 20px; font-size: 15px; opacity: 0; transition: opacity .2s;
+    pointer-events: none; max-width: calc(100vw - 32px); }
+  #toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<header>
+  <nav id="crumbs"></nav>
+  <button class="hbtn" id="newdir" aria-label="Новая папка">📁</button>
+  <button class="hbtn" id="add" aria-label="Добавить аудио">+</button>
+</header>
+
+<main><div id="list"></div></main>
+
+<footer class="off" id="player">
+  <div id="title"></div>
+  <div id="sub"></div>
+  <div class="seek"><span id="cur">0:00</span><input type="range" id="pos" min="0" max="1000" value="0"><span id="dur">0:00</span></div>
+  <div class="ctrls">
+    <button class="toggle" id="shuffle" aria-label="Перемешать">🔀</button>
+    <button id="prev" aria-label="Назад">⏮</button>
+    <button id="play" aria-label="Играть">▶</button>
+    <button id="next" aria-label="Вперёд">⏭</button>
+    <button class="toggle" id="repeat" aria-label="Повтор">🔁</button>
+  </div>
+</footer>
+
+<dialog id="menu"></dialog>
+<div id="toast"></div>
+<input type="file" id="files" accept="audio/*,.mp3,.m4a,.aac,.wav,.flac,.ogg,.opus" multiple hidden>
+<input type="file" id="folder" webkitdirectory hidden>
+<audio id="audio" preload="auto"></audio>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "soft-player-web",
+  "private": true,
+  "description": "Dev tooling only: the app itself is plain files with no build step",
+  "scripts": {
+    "dev": "python3 -m http.server 8080",
+    "test": "playwright test",
+    "deploy": "sh scripts/deploy.sh"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1"
+  }
+}
